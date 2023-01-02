@@ -17,8 +17,6 @@ const client = new MongoClient(uri, {
     serverApi: ServerApiVersion.v1,
 });
 
-console.log(uri.red);
-
 const run = async () => {
     try {
         const db = client.db("devdude");
@@ -26,20 +24,35 @@ const run = async () => {
 
         app.get("/blogs", async (req, res) => {
             const cursor = blogCollection.find({});
-            const product = await cursor.toArray();
+            const blogs = await cursor.toArray();
 
-            res.send({ status: true, data: product });
+            res.send({ status: true, data: blogs });
+        });
+        app.get("/blog/:id", async (req, res) => {
+            const { id } = req.params;
+            const result = await blogCollection.findOne({
+                _id: ObjectId(id)
+            });
+
+            res.send({ status: true, data: result });
         });
 
         app.post("/blog", async (req, res) => {
-            const product = req.body;
+            const blog = req.body;
 
-            const result = await blogCollection.insertOne(product);
+            const result = await blogCollection.insertOne(blog);
 
             res.send(result);
         });
 
-        app.delete("/product/:id", async (req, res) => {
+        app.put("/blog/:id", async (req, res) => {
+            const id = req.params.id;
+            const updateBlog = req.body;
+
+            const result = await blogCollection.updateOne({ _id: ObjectId(id) }, { $set: updateBlog });
+            res.send(result);
+        });
+        app.delete("/blog/:id", async (req, res) => {
             const id = req.params.id;
 
             const result = await blogCollection.deleteOne({ _id: ObjectId(id) });
@@ -56,5 +69,5 @@ app.get("/", (req, res) => {
 });
 
 app.listen(port, () => {
-    console.log(`DevDude is running on port ${port}`.yellow);
+    console.log(`DevDude is running on port ${port}`.red);
 });
